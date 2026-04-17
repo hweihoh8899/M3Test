@@ -48,7 +48,6 @@ public class NormalItem : Item
     public void ApplyTheme(NormalItemTheme theme)
     {
         if (theme == null) return;
-        Debug.Log(SpriteRenderer == null);
         if (SpriteRenderer == null) return;
         
         Sprite sprite = theme.GetSprite(ItemType);

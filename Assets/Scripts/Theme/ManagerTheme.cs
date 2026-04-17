@@ -26,7 +26,6 @@ public class ManagerTheme : MonoBehaviour
 
     void LoadThemeCollection()
     {
-        Debug.Log("???? " + Resources.Load<ThemeCollection>(THEME_COLLECTION_PATH));
         ThemeCollection = Resources.Load<ThemeCollection>(THEME_COLLECTION_PATH);
     }
 

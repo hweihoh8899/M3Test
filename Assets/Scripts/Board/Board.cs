@@ -138,6 +138,21 @@ public class Board
 
     internal void FillGapsWithNewItems()
     {
+        int typeCount = System.Enum.GetValues(typeof(NormalItem.eNormalType)).Length;
+        int[] typeHolder = new int[typeCount];
+        
+        for (int x = 0; x < boardSizeX; x++)
+        {
+            for (int y = 0; y < boardSizeY; y++)
+            {
+                NormalItem nitem = m_cells[x, y].Item as NormalItem;
+                if (nitem != null)
+                {
+                    typeHolder[(int)nitem.ItemType]++;
+                }
+            }
+        }
+        
         for (int x = 0; x < boardSizeX; x++)
         {
             for (int y = 0; y < boardSizeY; y++)
@@ -145,15 +160,63 @@ public class Board
                 Cell cell = m_cells[x, y];
                 if (!cell.IsEmpty) continue;
 
-                NormalItem item = new NormalItem();
+                NormalItem.eNormalType chosenType = PickLeastCommonTypeExcludingNeighbors(
+                    cell, typeHolder
+                );
 
-                item.SetType(Utils.GetRandomNormalType());
+                NormalItem item = new NormalItem();
+                item.SetType(chosenType);
                 item.SetView();
                 item.SetViewRoot(m_root);
 
                 cell.Assign(item);
                 cell.ApplyItemPosition(true);
+
+                // Cập nhật count ngay sau khi fill — cell tiếp theo sẽ thấy count mới
+                typeHolder[(int)chosenType]++;
             }
+        }
+    }
+
+    private NormalItem.eNormalType PickLeastCommonTypeExcludingNeighbors(
+        Cell cell, int[] typeCounts)
+    {
+        Debug.Log("????");
+        List<NormalItem.eNormalType> excludeTypes = new List<NormalItem.eNormalType>(4);
+
+        CheckNeighborType(cell.NeighbourUp, excludeTypes);
+        CheckNeighborType(cell.NeighbourBottom, excludeTypes);
+        CheckNeighborType(cell.NeighbourLeft, excludeTypes);
+        CheckNeighborType(cell.NeighbourRight, excludeTypes);
+
+        int bestCount = int.MaxValue;
+        NormalItem.eNormalType bestType = NormalItem.eNormalType.TYPE_ONE;
+        bool found = false;
+
+        var allTypes = Utils.GetAllNormalType();
+        for (int i = 0; i < allTypes.Length; i++)
+        {
+            if (excludeTypes.Contains(allTypes[i])) continue;
+
+            if (typeCounts[i] < bestCount)
+            {
+                bestCount = typeCounts[i];
+                bestType = allTypes[i];
+                found = true;
+            }
+        }
+
+        return bestType;
+    }
+    
+    private void CheckNeighborType(Cell neighbor, List<NormalItem.eNormalType> list)
+    {
+        if (neighbor == null) return;
+
+        NormalItem nitem = neighbor.Item as NormalItem;
+        if (nitem != null && !list.Contains(nitem.ItemType))
+        {
+            list.Add(nitem.ItemType);
         }
     }
 
