@@ -5,6 +5,7 @@ using System.Collections.Generic;
 //using System.Linq;
 using UnityEngine;
 
+
 public class BoardController : MonoBehaviour
 {
     public event Action OnMoveEvent = delegate { };
@@ -183,6 +184,8 @@ public class BoardController : MonoBehaviour
         }
     }
 
+    private bool hasSave;
+
     private void FindMatchesAndCollapse()
     {
         List<Cell> matches = m_board.FindFirstMatch();
@@ -199,6 +202,12 @@ public class BoardController : MonoBehaviour
                 IsBusy = false;
 
                 m_timeAfterFill = 0f;
+                
+                if (!hasSave)
+                {
+                    m_board.SaveStartBoard();
+                    hasSave = true;
+                }
             }
             else
             {
@@ -206,6 +215,19 @@ public class BoardController : MonoBehaviour
                 StartCoroutine(ShuffleBoardCoroutine());
             }
         }
+    }
+    
+    internal void RevertBoard()
+    {
+        StopAllCoroutines();
+        DOTween.Kill(GameManager.TWEEN_GROUP_GAMEPLAY);
+
+        m_board.RevertToStartBoard();
+
+        IsBusy = false;
+        m_hintIsShown = false;
+        m_timeAfterFill = 0f;
+        m_potentialMatch = m_board.GetPotentialMatches();
     }
 
     private List<Cell> GetMatches(Cell cell)

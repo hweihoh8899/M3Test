@@ -5,8 +5,12 @@ using System.Collections.Generic;
 //using System.Linq;
 using UnityEngine;
 
+
+
 public class Board
 {
+    
+    
     public enum eMatchDirection
     {
         NONE,
@@ -752,4 +756,59 @@ public class Board
             }
         }
     }
+    
+    private CellCache[,] arrCellCaches;
+
+    internal void SaveStartBoard()
+    {
+        arrCellCaches = new CellCache[boardSizeX, boardSizeY];
+        for (int x = 0; x < boardSizeX; x++)
+        {
+            for (int y = 0; y < boardSizeY; y++)
+            {
+                NormalItem nitem = m_cells[x, y].Item as NormalItem;
+                if (nitem != null)
+                {
+                    arrCellCaches[x, y] = new CellCache { Type = nitem.ItemType };
+                }
+            }
+        }
+    }
+    
+    internal void RevertToStartBoard()
+    {
+        if (arrCellCaches == null) return;
+
+        for (int x = 0; x < boardSizeX; x++)
+        {
+            for (int y = 0; y < boardSizeY; y++)
+            {
+                Cell cell = m_cells[x, y];
+                if (!cell.IsEmpty)
+                {
+                    cell.Clear();
+                }
+            }
+        }
+
+        for (int x = 0; x < boardSizeX; x++)
+        {
+            for (int y = 0; y < boardSizeY; y++)
+            {
+                Cell cell = m_cells[x, y];
+
+                NormalItem item = new NormalItem();
+                item.SetType(arrCellCaches[x, y].Type);
+                item.SetView();
+                item.SetViewRoot(m_root);
+
+                cell.Assign(item);
+                cell.ApplyItemPosition(false);
+            }
+        }
+    }
+}
+public struct CellCache
+{
+    public NormalItem.eNormalType Type;
 }

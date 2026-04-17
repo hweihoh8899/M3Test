@@ -7,7 +7,7 @@ using UnityEngine;
 public class GameManager : MonoBehaviour
 {
     public event Action<eStateGame> StateChangedAction = delegate { };
-
+    public static readonly int TWEEN_GROUP_GAMEPLAY = "Gameplay".GetHashCode();
     public enum eLevelMode
     {
         TIMER,
@@ -71,18 +71,20 @@ public class GameManager : MonoBehaviour
     {
         State = state;
 
-        if(State == eStateGame.PAUSE)
+        if (State == eStateGame.PAUSE)
         {
-            DOTween.PauseAll();
+            DOTween.Pause(TWEEN_GROUP_GAMEPLAY);
         }
         else
         {
-            DOTween.PlayAll();
+            DOTween.Play(TWEEN_GROUP_GAMEPLAY);
         }
     }
 
     public void LoadLevel(eLevelMode mode)
     {
+        currentMode = mode;
+        
         m_boardController = new GameObject("BoardController").AddComponent<BoardController>();
         m_boardController.StartGame(this, m_gameSettings);
 
@@ -134,6 +136,37 @@ public class GameManager : MonoBehaviour
 
             Destroy(m_levelCondition);
             m_levelCondition = null;
+        }
+    }
+    private eLevelMode currentMode;
+    public void ResetGame()
+    {
+        if (m_boardController == null) return;
+
+        m_boardController.RevertBoard();
+        
+        if (m_levelCondition != null)
+        {
+            m_levelCondition.ConditionCompleteEvent -= GameOver;
+            Destroy(m_levelCondition);
+            m_levelCondition = null;
+            
+            if (currentMode == eLevelMode.MOVES)
+            {
+                m_levelCondition = gameObject.AddComponent<LevelMoves>();
+                m_levelCondition.Setup(m_gameSettings.LevelMoves,
+                    m_uiMenu.GetLevelConditionView(), m_boardController);
+            }
+            else
+            {
+                m_levelCondition = gameObject.AddComponent<LevelTime>();
+                m_levelCondition.Setup(m_gameSettings.LevelTime,
+                    m_uiMenu.GetLevelConditionView(), this);
+            }
+
+            m_levelCondition.ConditionCompleteEvent += GameOver;
+
+            State = eStateGame.GAME_STARTED;
         }
     }
 }

@@ -107,6 +107,11 @@ public class UIMainManager : MonoBehaviour
         }
         return null;
     }
+    
+    internal void RevertMatch()
+    {
+        m_gameManager.ResetGame();
+    }
 
     internal void ShowPauseMenu()
     {
