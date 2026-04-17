@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using DG.Tweening;
 
@@ -12,20 +10,20 @@ public class Item
     public Transform View { get; private set; }
 
     public SpriteRenderer SpriteRenderer { get; private set; }
+    
+    private string prefabPath;
 
     public virtual void SetView()
     {
-        string prefabname = GetPrefabName();
-
-        if (!string.IsNullOrEmpty(prefabname))
+        prefabPath = GetPrefabName();
+        
+        if (string.IsNullOrEmpty(prefabPath)) return;
+        GameObject go = PoolManager.Instance.Obtain(prefabPath);
+        if (go != null)
         {
-            GameObject prefab = Resources.Load<GameObject>(prefabname);
-            if (prefab)
-            {
-                View = GameObject.Instantiate(prefab).transform;
-                SpriteRenderer = View.GetComponent<SpriteRenderer>();
-                OnViewSet();
-            }
+            View = go.transform;
+            SpriteRenderer = View.GetComponent<SpriteRenderer>();
+            OnViewSet();
         }
     }
     
@@ -105,6 +103,8 @@ public class Item
     {
         if (View)
         {
+            View.DOKill();
+            
             View.DOScale(0.1f, 0.1f).OnComplete(
                 () =>
                 {
@@ -140,8 +140,19 @@ public class Item
 
         if (View)
         {
-            GameObject.Destroy(View.gameObject);
-            View = null;
+            OnViewRelease();
+            View.DOKill();
+            View.localScale = Vector3.one;
+            if (SpriteRenderer != null) SpriteRenderer.sortingOrder = 0;
+            
+            if (!string.IsNullOrEmpty(prefabPath) && PoolManager.Instance != null)
+            {
+                PoolManager.Instance.Release(prefabPath, View.gameObject);
+            }
+            else
+            {
+                GameObject.Destroy(View.gameObject);
+            }
         }
     }
 }

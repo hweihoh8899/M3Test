@@ -2,7 +2,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
+//using System.Linq;
 using UnityEngine;
 
 public class BoardController : MonoBehaviour
@@ -136,7 +136,8 @@ public class BoardController : MonoBehaviour
         m_isDragging = false;
         m_hitCollider = null;
     }
-
+    private readonly List<Cell> listMatch = new List<Cell>();
+    private readonly HashSet<Cell> hashSetMatchCell = new HashSet<Cell>();
     private void FindMatchesAndCollapse(Cell cell1, Cell cell2)
     {
         if (cell1.Item is BonusItem)
@@ -153,13 +154,20 @@ public class BoardController : MonoBehaviour
         {
             List<Cell> cells1 = GetMatches(cell1);
             List<Cell> cells2 = GetMatches(cell2);
+            
+            // List<Cell> matches = new List<Cell>();
+            // matches.AddRange(cells1);
+            // matches.AddRange(cells2);
+            // matches = matches.Distinct().ToList();
 
-            List<Cell> matches = new List<Cell>();
-            matches.AddRange(cells1);
-            matches.AddRange(cells2);
-            matches = matches.Distinct().ToList();
+            hashSetMatchCell.Clear();
+            for (int i = 0; i < cells1.Count; i++) hashSetMatchCell.Add(cells1[i]);
+            for (int i = 0; i < cells2.Count; i++) hashSetMatchCell.Add(cells2[i]);
 
-            if (matches.Count < m_gameSettings.MatchesMin)
+            listMatch.Clear();
+            foreach (var cell in hashSetMatchCell) listMatch.Add(cell);
+
+            if (listMatch.Count < m_gameSettings.MatchesMin)
             {
                 m_board.Swap(cell1, cell2, () =>
                 {
@@ -170,7 +178,7 @@ public class BoardController : MonoBehaviour
             {
                 OnMoveEvent();
 
-                CollapseMatches(matches, cell2);
+                CollapseMatches(listMatch, cell2);
             }
         }
     }
@@ -214,7 +222,15 @@ public class BoardController : MonoBehaviour
             listVert.Clear();
         }
 
-        return listHor.Concat(listVert).Distinct().ToList();
+        //return listHor.Concat(listVert).Distinct().ToList();
+        
+        hashSetMatchCell.Clear();
+        for (int i = 0; i < listHor.Count; i++) hashSetMatchCell.Add(listHor[i]);
+        for (int i = 0; i < listVert.Count; i++) hashSetMatchCell.Add(listVert[i]);
+
+        List<Cell> result = new List<Cell>(hashSetMatchCell.Count);
+        foreach (var cell2 in hashSetMatchCell) result.Add(cell2);
+        return result;
     }
 
     private void CollapseMatches(List<Cell> matches, Cell cellEnd)

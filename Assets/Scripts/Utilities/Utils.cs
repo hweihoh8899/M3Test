@@ -1,22 +1,28 @@
 ﻿using System;
-using System.Linq;
+//using System.Linq;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using URandom = UnityEngine.Random;
 
-public class Utils
+public static class Utils
 {
-
-    public static NormalItem.eNormalType[] GetAllNormalType()
+    private static readonly List<NormalItem.eNormalType> listFilteredNormalType;
+    private static readonly NormalItem.eNormalType[] arrNormalType;
+    static Utils()
     {
         Array values = Enum.GetValues(typeof(NormalItem.eNormalType));
-        NormalItem.eNormalType[] arrAllNormalTypes = new NormalItem.eNormalType[values.Length];
+        arrNormalType = new NormalItem.eNormalType[values.Length];
         for (int i = 0; i < values.Length; i++)
         {
-            arrAllNormalTypes[i] = (NormalItem.eNormalType)values.GetValue(i);
+            arrNormalType[i] = (NormalItem.eNormalType)values.GetValue(i);
         }
-        return arrAllNormalTypes;
+        
+        listFilteredNormalType = new List<NormalItem.eNormalType>();
+    }
+    public static NormalItem.eNormalType[] GetAllNormalType()
+    {
+        return arrNormalType;
     }
     
     public static NormalItem.eNormalType GetRandomNormalType()
@@ -29,11 +35,37 @@ public class Utils
 
     public static NormalItem.eNormalType GetRandomNormalTypeExcept(NormalItem.eNormalType[] types)
     {
-        List<NormalItem.eNormalType> list = Enum.GetValues(typeof(NormalItem.eNormalType)).Cast<NormalItem.eNormalType>().Except(types).ToList();
+        //List<NormalItem.eNormalType> list = Enum.GetValues(typeof(NormalItem.eNormalType)).Cast<NormalItem.eNormalType>().Except(types).ToList();
 
-        int rnd = URandom.Range(0, list.Count);
-        NormalItem.eNormalType result = list[rnd];
+        // int rnd = URandom.Range(0, list.Count);
+        // NormalItem.eNormalType result = list[rnd];
+        //
+        // return result;
+        listFilteredNormalType.Clear();
+        
+        for (int i = 0; i < arrNormalType.Length; i++)
+        {
+            bool excluded = false;
+            for (int j = 0; j < types.Length; j++)
+            {
+                if (arrNormalType[i] == types[j])
+                {
+                    excluded = true;
+                    break;
+                }
+            }
 
-        return result;
+            if (!excluded)
+            {
+                listFilteredNormalType.Add(arrNormalType[i]);
+            }
+        }
+        
+        if (listFilteredNormalType.Count == 0)
+        {
+            return arrNormalType[URandom.Range(0, arrNormalType.Length)];
+        }
+
+        return listFilteredNormalType[URandom.Range(0, listFilteredNormalType.Count)];
     }
 }

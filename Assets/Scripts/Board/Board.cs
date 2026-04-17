@@ -2,7 +2,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
+//using System.Linq;
 using UnityEngine;
 
 public class Board
@@ -359,17 +359,23 @@ public class Board
     {
         if (matches == null || matches.Count < m_matchMin) return eMatchDirection.NONE;
 
-        var listH = matches.Where(x => x.BoardX == matches[0].BoardX).ToList();
-        if (listH.Count == matches.Count)
+        bool checkX = true;
+        
+        int xValue = matches[0].BoardX;
+        for (int i = 1; i < matches.Count; i++)
         {
-            return eMatchDirection.VERTICAL;
+            if (matches[i].BoardX != xValue) { checkX = false; break; }
         }
+        if (checkX) return eMatchDirection.VERTICAL;
+        
 
-        var listV = matches.Where(x => x.BoardY == matches[0].BoardY).ToList();
-        if (listV.Count == matches.Count)
+        bool checkY = true;
+        int yValue = matches[0].BoardY;
+        for (int i = 1; i < matches.Count; i++)
         {
-            return eMatchDirection.HORIZONTAL;
+            if (matches[i].BoardY != yValue) { checkY = false; break; }
         }
+        if (checkY) return eMatchDirection.HORIZONTAL;
 
         if (matches.Count > 5)
         {
@@ -411,8 +417,17 @@ public class Board
     public List<Cell> CheckBonusIfCompatible(List<Cell> matches)
     {
         var dir = GetMatchDirection(matches);
-
-        var bonus = matches.Where(x => x.Item is BonusItem).FirstOrDefault();
+        //var bonus = matches.Where(x => x.Item is BonusItem).FirstOrDefault();
+        Cell bonus = null;
+        foreach (var cell in matches)
+        {
+            if (cell.Item is BonusItem)
+            {
+                bonus = cell;
+                break;
+            }
+        }
+        
         if(bonus == null)
         {
             return matches;

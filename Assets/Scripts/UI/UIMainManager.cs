@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
+//using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -90,12 +90,21 @@ public class UIMainManager : MonoBehaviour
 
     internal Text GetLevelConditionView()
     {
-        UIPanelGame game = m_menuList.Where(x => x is UIPanelGame).Cast<UIPanelGame>().FirstOrDefault();
-        if (game)
+        // UIPanelGame game = m_menuList.Where(x => x is UIPanelGame).Cast<UIPanelGame>().FirstOrDefault();
+        // if (game)
+        // {
+        //     return game.LevelConditionView;
+        // }
+        //
+        // return null;
+        
+        for (int i = 0; i < m_menuList.Length; i++)
         {
-            return game.LevelConditionView;
+            if (m_menuList[i] is UIPanelGame game)
+            {
+                return game.LevelConditionView;
+            }
         }
-
         return null;
     }
 
