@@ -22,6 +22,43 @@ public class NormalItem : Item
         ItemType = type;
     }
 
+    protected override void OnViewSet()
+    {
+        base.OnViewSet();
+        if (ManagerTheme.Instance != null)
+        {
+            if (ManagerTheme.Instance != null)
+            {
+                ApplyTheme(ManagerTheme.Instance.CurrentTheme);
+                ManagerTheme.Instance.RegisterItem(this);
+            }
+        }
+    }
+
+    protected override void OnViewRelease()
+    {
+        if (ManagerTheme.Instance != null)
+        {
+            ManagerTheme.Instance.UnRegisterItem(this);
+        }
+
+        base.OnViewRelease();
+    }
+    
+    public void ApplyTheme(NormalItemTheme theme)
+    {
+        if (theme == null) return;
+        Debug.Log(SpriteRenderer == null);
+        if (SpriteRenderer == null) return;
+        
+        Sprite sprite = theme.GetSprite(ItemType);
+        if (sprite != null)
+        {
+            SpriteRenderer.sprite = sprite;
+        }
+    }
+    
+
     protected override string GetPrefabName()
     {
         string prefabname = string.Empty;

@@ -11,6 +11,7 @@ public class Item
 
     public Transform View { get; private set; }
 
+    public SpriteRenderer SpriteRenderer { get; private set; }
 
     public virtual void SetView()
     {
@@ -22,9 +23,15 @@ public class Item
             if (prefab)
             {
                 View = GameObject.Instantiate(prefab).transform;
+                SpriteRenderer = View.GetComponent<SpriteRenderer>();
+                OnViewSet();
             }
         }
     }
+    
+    protected virtual void OnViewSet() {}
+    
+    protected virtual void OnViewRelease() {}
 
     protected virtual string GetPrefabName() { return string.Empty; }
 
@@ -101,6 +108,7 @@ public class Item
             View.DOScale(0.1f, 0.1f).OnComplete(
                 () =>
                 {
+                    OnViewRelease();
                     GameObject.Destroy(View.gameObject);
                     View = null;
                 }
